@@ -70,5 +70,16 @@
         /// </para>
         /// </summary>
         public string IncludeHttpMethod { get; set; }
+
+        /// <summary>
+        /// Url to log but dont capture body (case insensitive regex pattern). 
+        /// <para>
+        /// Place to put authentication urls in order to prevent capture of credentials.
+        /// </para>
+        /// <para>
+        /// Only the portion after host/port, including querystring will be analyzed, in other words, the path + querystring.
+        /// </para>
+        /// </summary>
+        public string DisableBodyCapturingForUrl { get; set; }
     }
 }

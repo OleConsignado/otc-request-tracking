@@ -20,8 +20,11 @@ namespace Otc.RequestTracking.AspNetCore
             logger = loggerFactory?.CreateLogger<RequestTracker>() ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        private bool ShouldLogBody(string contentType) => !string.IsNullOrEmpty(contentType) && 
-                Regex.IsMatch(contentType, requestTrackerConfiguration.EnableBodyLoggingForContentType, RegexOptions.IgnoreCase);
+        private bool ShouldLogBody(HttpRequest request) => !string.IsNullOrEmpty(request.ContentType) &&
+                Regex.IsMatch(request.ContentType, requestTrackerConfiguration.EnableBodyLoggingForContentType, RegexOptions.IgnoreCase) &&
+                (string.IsNullOrEmpty(requestTrackerConfiguration.DisableBodyCapturingForUrl) ||
+                !Regex.IsMatch(request.Path, requestTrackerConfiguration.DisableBodyCapturingForUrl, RegexOptions.IgnoreCase));
+
 
         /// <summary>
         /// 
@@ -130,7 +133,7 @@ namespace Otc.RequestTracking.AspNetCore
                 RemoteAddress = request.HttpContext.Connection?.RemoteIpAddress?.ToString()
             };
 
-            if (ShouldLogBody(request.ContentType))
+            if (ShouldLogBody(request))
             {
                 Encoding encoding = ParseContentEncoding(request.ContentType) ?? Encoding.UTF8;
                 requestLogModel.Body = ExtractBody(request, encoding);
