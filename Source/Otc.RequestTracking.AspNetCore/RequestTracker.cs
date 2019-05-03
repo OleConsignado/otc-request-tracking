@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging;
-using Otc.Streaming;
-using Otc.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -144,10 +143,11 @@ namespace Otc.RequestTracking.AspNetCore
 
         private string ExtractBody(HttpRequest request, Encoding encoding)
         {
-            var inputStream = new ForwardOnlyPeekableStream(request.Body);
-            request.Body = inputStream;
-            var buffer = inputStream.Peek(requestTrackerConfiguration.BodyMaxLength + 256);
-            var body = encoding.GetString(buffer, 0, buffer.Length);
+            request.EnableRewind();
+            var buffer = new byte[requestTrackerConfiguration.BodyMaxLength + 256];
+            var lenght = request.Body.Read(buffer, 0, buffer.Length);
+            var body = encoding.GetString(buffer, 0, lenght);
+            request.Body.Position = 0;
 
             return StringUtil.TruncateIfLengthExceeds(body, requestTrackerConfiguration.BodyMaxLength);
         }
