@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -144,12 +145,22 @@ namespace Otc.RequestTracking.AspNetCore
         private string ExtractBody(HttpRequest request, Encoding encoding)
         {
             request.EnableRewind();
-            var buffer = new byte[requestTrackerConfiguration.BodyMaxLength + 256];
-            var lenght = request.Body.Read(buffer, 0, buffer.Length);
-            var body = encoding.GetString(buffer, 0, lenght);
-            request.Body.Position = 0;
 
-            return StringUtil.TruncateIfLengthExceeds(body, requestTrackerConfiguration.BodyMaxLength);
+            var buffer = new char[requestTrackerConfiguration.BodyMaxLength + 256];
+
+            using (var reader = new StreamReader(
+                   request.Body,
+                   encoding: encoding,
+                   detectEncodingFromByteOrderMarks: false,
+                   bufferSize: buffer.Length,
+                   leaveOpen: true))
+            {
+                int length = reader.ReadBlock(buffer, 0, buffer.Length);
+                request.Body.Position = 0;
+                var body = new string(buffer, 0, length);
+
+                return StringUtil.TruncateIfLengthExceeds(body, requestTrackerConfiguration.BodyMaxLength);
+            }
         }
 
         private IDictionary<string, string> ExtractHeaders(HttpRequest request)
