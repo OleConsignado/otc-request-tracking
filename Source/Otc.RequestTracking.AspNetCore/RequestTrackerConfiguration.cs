@@ -5,7 +5,7 @@
         /// <summary>
         /// Enable log request details
         /// </summary>
-        public bool RequestTrackerEnabled = true;
+        public bool RequestTrackerEnabled { get; set; } = true;
 
         /// <summary>
         /// Max length for header key in logs (exceeds will be truncated)
@@ -15,12 +15,12 @@
         /// <summary>
         /// Max length for header value in logs (exceeds will be truncated)
         /// </summary>
-        public int HeaderValueMaxLength  { get; set; }  = 4096;
+        public int HeaderValueMaxLength  { get; set; }  = 2048;
 
         /// <summary>
         /// Max length for request body in logs (exceeds will be truncated)
         /// </summary>
-        public int BodyMaxLength { get; set; } = 8192;
+        public int BodyMaxLength { get; set; } = 4096;
 
         /// <summary>
         /// Max length for Url (including schema, host, path and querystring) in logs (exceeds will be truncated)
